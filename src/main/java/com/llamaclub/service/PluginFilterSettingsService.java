@@ -1,6 +1,9 @@
 package com.llamaclub.service;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.util.Map;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
@@ -13,6 +16,14 @@ public class PluginFilterSettingsService
 	private volatile int lootMinValue = DEFAULT_LOOT_MIN_VALUE;
 	private volatile int clueMinValue = DEFAULT_CLUE_MIN_VALUE;
 	private volatile int clueScreenshotMinValue = DEFAULT_CLUE_SCREENSHOT_MIN_VALUE;
+
+	private final Gson gson;
+
+	@Inject
+	PluginFilterSettingsService(Gson gson)
+	{
+		this.gson = gson;
+	}
 
 	public int lootMinValue()
 	{
@@ -76,10 +87,9 @@ public class PluginFilterSettingsService
 
 		try
 		{
-			com.google.gson.Gson gson = new com.google.gson.Gson();
 			Map<String, Object> parsed = gson.fromJson(
 				responseBody,
-				new com.google.gson.reflect.TypeToken<Map<String, Object>>() {}.getType()
+				new TypeToken<Map<String, Object>>() {}.getType()
 			);
 
 			Object settings = parsed.get("pluginFilterSettings");
