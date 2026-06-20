@@ -1,0 +1,11 @@
+.gradle/
+build/
+.idea/
+*.iml
+out/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.DS_Store
+Thumbs.db
+*.log
+/runelite/

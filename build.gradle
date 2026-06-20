@@ -1,0 +1,150 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = 'https://repo.runelite.net'
+        content {
+            includeGroupByRegex("net\\.runelite.*")
+        }
+    }
+    mavenCentral()
+}
+
+def runeLiteVersion = 'latest.release'
+def pluginMainClass = 'com.llamaclub.LlamaClubPluginTest'
+
+dependencies {
+    compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
+    testImplementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+    testImplementation group: 'net.runelite', name: 'jshell', version: runeLiteVersion
+}
+
+group = 'com.llamaclub'
+version = '1.0.0'
+
+def pluginIconSource = file('src/main/resources/com/llamaclub/llama_icon_source.png')
+def pluginIconOutputDir = layout.buildDirectory.dir('generated/resources/com/llamaclub')
+
+tasks.register('processPluginIcon') {
+    onlyIf { pluginIconSource.exists() }
+    inputs.file pluginIconSource
+    outputs.file pluginIconOutputDir.map { it.file('llama_icon.png') }
+
+    doLast {
+        def outFile = pluginIconOutputDir.get().file('llama_icon.png').asFile
+        outFile.parentFile.mkdirs()
+
+        def img = javax.imageio.ImageIO.read(pluginIconSource)
+        int w = img.getWidth()
+        int h = img.getHeight()
+        int minX = w
+        int minY = h
+        int maxX = 0
+        int maxY = 0
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int rgb = img.getRGB(x, y)
+                int alpha = (rgb >> 24) & 0xFF
+                int red = (rgb >> 16) & 0xFF
+                int green = (rgb >> 8) & 0xFF
+                int blue = rgb & 0xFF
+                if (alpha > 10 && (red > 20 || green > 20 || blue > 20)) {
+                    minX = Math.min(minX, x)
+                    minY = Math.min(minY, y)
+                    maxX = Math.max(maxX, x)
+                    maxY = Math.max(maxY, y)
+                }
+            }
+        }
+
+        if (maxX < minX) {
+            throw new GradleException("Could not find visible content in ${pluginIconSource}")
+        }
+
+        def cropped = img.getSubimage(minX, minY, maxX - minX + 1, maxY - minY + 1)
+        int iconSize = 16
+        def output = new java.awt.image.BufferedImage(iconSize, iconSize, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+        def graphics = output.createGraphics()
+        graphics.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR)
+        graphics.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_OFF)
+        graphics.drawImage(cropped, 0, 0, iconSize, iconSize, null)
+        graphics.dispose()
+
+        for (int y = 0; y < iconSize; y++) {
+            for (int x = 0; x < iconSize; x++) {
+                int rgb = output.getRGB(x, y)
+                int alpha = (rgb >> 24) & 0xFF
+                int red = (rgb >> 16) & 0xFF
+                int green = (rgb >> 8) & 0xFF
+                int blue = rgb & 0xFF
+                if (alpha > 0 && red <= 20 && green <= 20 && blue <= 20) {
+                    output.setRGB(x, y, 0)
+                }
+            }
+        }
+
+        javax.imageio.ImageIO.write(output, 'png', outFile)
+    }
+}
+
+sourceSets.main.resources.srcDir layout.buildDirectory.dir('generated/resources')
+
+processResources {
+    dependsOn processPluginIcon
+    exclude 'com/llamaclub/llama_icon_source.png'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release.set(11)
+}
+
+tasks.register('run', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = pluginMainClass
+
+    jvmArgs '-ea'
+    args '--developer-mode', '--debug'
+}
+
+tasks.register('shadowJar', Jar) {
+    dependsOn classes
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from sourceSets.main.output
+    from {
+        configurations.runtimeClasspath
+            .findAll { dep ->
+                def n = dep.name.toLowerCase()
+                !n.contains('runelite') && !n.startsWith('junit')
+            }
+            .collect { file -> file.isDirectory() ? file : zipTree(file) }
+    }
+
+    exclude 'META-INF/INDEX.LIST'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude '**/module-info.class'
+
+    from('LICENSE')
+    from('LICENSES') {
+        into 'LICENSES'
+    }
+
+    group = BasePlugin.BUILD_GROUP
+    archiveClassifier.set('shadow')
+    archiveFileName.set("${rootProject.name}-${project.version}-all.jar")
+}
