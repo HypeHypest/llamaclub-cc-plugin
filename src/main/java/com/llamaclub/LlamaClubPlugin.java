@@ -134,6 +134,7 @@ public class LlamaClubPlugin extends Plugin
 	private NavigationButton navButton;
 	private GameState previousGameState;
 	private int adminCheckTickCounter;
+	private volatile boolean sessionEndSyncDispatched;
 
 	@Override
 	public void configure(Binder binder)
@@ -162,6 +163,7 @@ public class LlamaClubPlugin extends Plugin
 			levelNotifier.beginLoginHydration();
 		}
 		previousGameState = client.getGameState();
+		sessionEndSyncDispatched = false;
 		panel.reloadPersistedLastSyncAt();
 		panel.refreshStatus();
 		panel.refreshAdminAccess();
@@ -172,8 +174,9 @@ public class LlamaClubPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
-		if (config.syncOnLogout())
+		if (config.syncOnLogout() && !sessionEndSyncDispatched)
 		{
+			sessionEndSyncDispatched = true;
 			syncService.syncOnSessionEnd(success ->
 			{
 				if (success)
@@ -244,8 +247,10 @@ public class LlamaClubPlugin extends Plugin
 			levelNotifier.flushPendingExperience();
 		}
 
-		if (config.syncOnLogout() && GameSessionStates.shouldEndPlaySession(previousGameState, newState))
+		if (config.syncOnLogout() && GameSessionStates.shouldEndPlaySession(previousGameState, newState)
+			&& !sessionEndSyncDispatched)
 		{
+			sessionEndSyncDispatched = true;
 			syncService.syncOnSessionEnd(success ->
 			{
 				if (success)
@@ -261,6 +266,7 @@ public class LlamaClubPlugin extends Plugin
 
 		if (newState == GameState.LOGGED_IN)
 		{
+			sessionEndSyncDispatched = false;
 			panel.reloadPersistedLastSyncAt();
 			adminCheckTickCounter = 0;
 			panel.refreshAdminAccess();
