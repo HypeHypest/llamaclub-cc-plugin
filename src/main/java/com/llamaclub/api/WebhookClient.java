@@ -632,78 +632,7 @@ public class WebhookClient
 
 	private String describeIngestFailure(int statusCode, String responseBody)
 	{
-		if (statusCode >= 300 && statusCode < 400)
-		{
-			return "Webhook request was redirected — use /api/runelite/ingest";
-		}
-
-		if (statusCode == 401)
-		{
-			return "Invalid plugin token — generate a new one on the website";
-		}
-
-		if (statusCode == 503)
-		{
-			return "RuneLite ingest is disabled on the server";
-		}
-
-		if (statusCode == 404)
-		{
-			return "API endpoint not found — the RuneLite backend may not be deployed to this URL yet";
-		}
-
-		String fromBody = extractFirstErrorMessage(responseBody);
-		if (fromBody != null)
-		{
-			return fromBody;
-		}
-
-		if (statusCode == 403)
-		{
-			return "Player is not a clan member — sync while logged into a clan character";
-		}
-
-		return "Sync failed (HTTP " + statusCode + ")";
-	}
-
-	private String extractFirstErrorMessage(String responseBody)
-	{
-		if (responseBody == null || responseBody.isBlank())
-		{
-			return null;
-		}
-
-		try
-		{
-			Map<String, Object> parsed = gson.fromJson(responseBody, MAP_TYPE);
-			Object message = parsed.get("message");
-			if (message instanceof String && !((String) message).isBlank())
-			{
-				return (String) message;
-			}
-
-			Object errors = parsed.get("errors");
-			if (errors instanceof Map)
-			{
-				for (Object value : ((Map<?, ?>) errors).values())
-				{
-					if (value instanceof List && !((List<?>) value).isEmpty())
-					{
-						Object first = ((List<?>) value).get(0);
-						if (first instanceof String)
-						{
-							return (String) first;
-						}
-					}
-				}
-			}
-		}
-		catch (RuntimeException ignored)
-		{
-			// Response body may not be JSON
-		}
-
-		return null;
+		return WebhookClientErrorMessages.describeFailure(statusCode, responseBody);
 	}
 
 	private boolean isSuccessfulScreenshotResponse(Response response, String responseBody)

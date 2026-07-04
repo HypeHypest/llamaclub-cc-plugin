@@ -36,7 +36,7 @@ public class AccountIdentity
 	{
 		Map<String, Object> identity = new HashMap<>();
 		identity.put("pluginToken", config.pluginToken());
-		identity.put("accountHash", client.getAccountHash());
+		identity.put("accountHash", Long.toString(client.getAccountHash()));
 		identity.put("rsProfileKey", configManager.getRSProfileKey());
 		identity.put("world", client.getWorld());
 
