@@ -282,7 +282,7 @@ public class CollectionLogNotifier extends BaseNotifier
 		}
 
 		Integer itemId = findItemId(itemName);
-		Long gePrice = itemId != null ? (long) itemManager.getItemPrice(itemId) : null;
+		Long gePrice = itemId != null ? itemManager.getItemPrice(itemId) : null;
 
 		RecentLootDrop recentDrop = itemId != null ? recentLootTracker.findDropContaining(itemId) : null;
 		String dropSource = recentDrop != null ? recentDrop.getSource() : null;

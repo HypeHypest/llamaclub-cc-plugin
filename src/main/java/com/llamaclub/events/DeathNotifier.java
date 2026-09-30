@@ -264,7 +264,7 @@ public class DeathNotifier extends BaseNotifier
 			else
 			{
 				lostItems.add(item);
-				totalLostValue += (long) (int) item.get("gePrice") * (int) item.get("quantity");
+				totalLostValue += ((Number) item.get("gePrice")).longValue() * (int) item.get("quantity");
 			}
 		}
 
@@ -297,7 +297,7 @@ public class DeathNotifier extends BaseNotifier
 		List<Map<String, Object>> items = new ArrayList<>();
 		collectItemsFromContainer(InventoryID.INVENTORY, items);
 		collectItemsFromContainer(InventoryID.EQUIPMENT, items);
-		items.sort(Comparator.<Map<String, Object>>comparingInt(m -> (int) m.get("gePrice")).reversed());
+		items.sort(Comparator.<Map<String, Object>>comparingLong(m -> ((Number) m.get("gePrice")).longValue()).reversed());
 		return items;
 	}
 
@@ -317,7 +317,7 @@ public class DeathNotifier extends BaseNotifier
 			}
 
 			int itemId = item.getId();
-			int gePrice = itemManager.getItemPrice(itemId);
+			long gePrice = itemManager.getItemPrice(itemId);
 			ItemComposition composition = itemManager.getItemComposition(itemId);
 
 			Map<String, Object> itemData = new HashMap<>();

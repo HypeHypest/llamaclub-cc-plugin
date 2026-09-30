@@ -282,7 +282,7 @@ public class LootNotifier extends BaseNotifier
 			}
 
 			ItemComposition composition = itemManager.getItemComposition(itemId);
-			int gePrice = itemManager.getItemPrice(itemId);
+			long gePrice = itemManager.getItemPrice(itemId);
 			int haValue = composition != null ? composition.getPrice() : 0;
 			boolean untradeable = composition != null && !composition.isTradeable();
 
@@ -292,11 +292,11 @@ public class LootNotifier extends BaseNotifier
 			itemData.put("quantity", quantity);
 			itemData.put("gePrice", gePrice);
 			itemData.put("haValue", haValue);
-			itemData.put("totalValue", (long) gePrice * quantity);
+			itemData.put("totalValue", gePrice * quantity);
 			itemData.put("untradeable", untradeable);
 			itemsList.add(itemData);
 
-			totalGEValue += (long) gePrice * quantity;
+			totalGEValue += gePrice * quantity;
 			totalHAValue += (long) haValue * quantity;
 		}
 

@@ -144,8 +144,8 @@ public class ClueNotifier extends BaseNotifier
 			int itemId = entry.getKey();
 			int quantity = entry.getValue();
 			ItemComposition composition = itemManager.getItemComposition(itemId);
-			int gePrice = itemManager.getItemPrice(itemId);
-			long lineValue = (long) gePrice * quantity;
+			long gePrice = itemManager.getItemPrice(itemId);
+			long lineValue = gePrice * quantity;
 			totalGeValue += lineValue;
 
 			Map<String, Object> itemData = new HashMap<>();
