@@ -632,7 +632,7 @@ public class WebhookClient
 
 	private String describeIngestFailure(int statusCode, String responseBody)
 	{
-		return WebhookClientErrorMessages.describeFailure(statusCode, responseBody);
+		return WebhookClientErrorMessages.describeFailure(gson, statusCode, responseBody);
 	}
 
 	private boolean isSuccessfulScreenshotResponse(Response response, String responseBody)

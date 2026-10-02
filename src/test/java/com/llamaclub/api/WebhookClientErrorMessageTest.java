@@ -20,7 +20,7 @@ public class WebhookClientErrorMessageTest
 
 		Assert.assertEquals(
 			"Player is not in the clan roster. Sync clan data from RuneLite first.",
-			WebhookClientErrorMessages.describeFailure(422, body)
+			WebhookClientErrorMessages.describeFailure(gson, 422, body)
 		);
 	}
 
@@ -29,7 +29,7 @@ public class WebhookClientErrorMessageTest
 	{
 		Assert.assertEquals(
 			"Website server error during ingest — contact a clan admin",
-			WebhookClientErrorMessages.describeFailure(500, "{\"message\":\"Server Error\"}")
+			WebhookClientErrorMessages.describeFailure(gson, 500, "{\"message\":\"Server Error\"}")
 		);
 	}
 
@@ -38,7 +38,7 @@ public class WebhookClientErrorMessageTest
 	{
 		Assert.assertEquals(
 			"Too many requests — wait a minute and try again",
-			WebhookClientErrorMessages.describeFailure(429, "{\"message\":\"Too Many Attempts.\"}")
+			WebhookClientErrorMessages.describeFailure(gson, 429, "{\"message\":\"Too Many Attempts.\"}")
 		);
 	}
 }

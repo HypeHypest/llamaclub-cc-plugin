@@ -21,7 +21,7 @@ final class WebhookClientErrorMessages
 	{
 	}
 
-	static String describeFailure(int statusCode, String responseBody)
+	static String describeFailure(Gson gson, int statusCode, String responseBody)
 	{
 		if (statusCode >= 300 && statusCode < 400)
 		{
@@ -50,7 +50,7 @@ final class WebhookClientErrorMessages
 
 		if (statusCode >= 500)
 		{
-			String fromBody = extractFirstErrorMessage(responseBody);
+			String fromBody = extractFirstErrorMessage(gson, responseBody);
 			if (fromBody != null && !GENERIC_ERROR_MESSAGES.contains(fromBody))
 			{
 				return fromBody;
@@ -59,7 +59,7 @@ final class WebhookClientErrorMessages
 			return "Website server error during ingest — contact a clan admin";
 		}
 
-		String fromBody = extractFirstErrorMessage(responseBody);
+		String fromBody = extractFirstErrorMessage(gson, responseBody);
 		if (fromBody != null)
 		{
 			return fromBody;
@@ -73,12 +73,7 @@ final class WebhookClientErrorMessages
 		return "Sync failed (HTTP " + statusCode + ")";
 	}
 
-	static String extractFirstErrorMessage(String responseBody)
-	{
-		return extractFirstErrorMessage(responseBody, new Gson());
-	}
-
-	private static String extractFirstErrorMessage(String responseBody, Gson gson)
+	private static String extractFirstErrorMessage(Gson gson, String responseBody)
 	{
 		if (responseBody == null || responseBody.isBlank())
 		{
