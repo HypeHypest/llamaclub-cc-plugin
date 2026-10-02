@@ -7,8 +7,6 @@ import com.llamaclub.service.ClanSyncService;
 import com.llamaclub.service.SyncService;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
-import java.net.URI;
 import javax.inject.Inject;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -26,6 +24,7 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.util.LinkBrowser;
 
 public class LlamaClubPanel extends PluginPanel
 {
@@ -598,13 +597,6 @@ public class LlamaClubPanel extends PluginPanel
 
 	private void openWebsite()
 	{
-		try
-		{
-			Desktop.getDesktop().browse(URI.create(config.websiteUrl() + "/profile"));
-		}
-		catch (Exception ignored)
-		{
-			// Desktop may be unavailable in some environments
-		}
+		LinkBrowser.browse(config.websiteUrl() + "/profile");
 	}
 }
